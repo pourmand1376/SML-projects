@@ -1,0 +1,171 @@
+\documentclass{article}[12pt]
+\usepackage{graphicx}
+\usepackage{amsmath,amssymb}
+\usepackage{tikz}
+\usepackage{xepersian}
+\settextfont[Scale=1]{IRXLotus}
+\setlatintextfont[Scale=0.8]{Times New Roman}
+
+\DeclareRobustCommand{\bbone}{\text{\usefont{U}{bbold}{m}{n}1}}
+
+\DeclareMathOperator{\EX}{\mathbb{E}}% expected value
+%\DeclareMathOperator{\Pr}{\mathbb{P}}
+
+\title{  \includegraphics[scale=0.35]{../../Images/logo.png} \\
+    دانشکده مهندسی کامپیوتر
+    \\
+    دانشگاه صنعتی شریف
+}
+\author{استاد درس: دکتر حمیدرضا ربیعی}
+\date{بهار ۱۴۰۰}
+
+
+
+\def \Subject {
+تمرین در خانه ششم
+}
+\def \Course {
+درس یادگیری ماشین آماری
+}
+\def \Author {
+نام و نام خانوادگی:
+امیر پورمند}
+\def \Email {\lr{pourmand1376@gmail.com}}
+\def \StudentNumber {99210259}
+
+
+\begin{document}
+
+ \maketitle
+ 
+\begin{center}
+\vspace{.4cm}
+{\bf {\huge \Subject}}\\
+{\bf \Large \Course}
+\vspace{.8cm}
+
+{\bf \Author}
+
+\vspace{0.3cm}
+
+{\bf شماره دانشجویی: \StudentNumber}
+
+\vspace{0.3cm}
+
+آدرس ایمیل
+:
+{\bf \Email}
+\end{center}
+
+
+\clearpage
+\section{سوال ۱}
+
+\begin{enumerate}
+\item 
+در واقع مدل ما باید سه ویژگی داشته باشد:
+\lr{global} ,
+\lr{model-specific},
+\lr{decision tree}.
+\lr{global}
+زیرا که باید کل مدل را یکجا به تیم پزشکی توضیح داد تا دلایل را متوجه شوند و یکی از بهترین روش های توضیح مدل که برای پزشکی نیز قابل قبول باید درخت تصمیم است که خود آنها نیز استفاده میکنند و مشخصا این روش یک روش مبتنی بر مدل است. 
+\item
+برای این مدل نیز سه ویژگی متصور است:
+\lr{local},
+\lr{model-agnostic},
+\lr{LIME}.
+local
+باشد زیرا که نیاز نیست کل مدل یکجا درک شود و همین که یک مثال خاص برایش توضیح باشد کافیست و البته میتواند model-agnostic باشد زیرا بتوانیم مدل های مختلف را اپلای کنیم و مشکلی نباشد. با این تعاریف مدل لایم یک مدل خوب است زیرا هم model-agnostic است و هم local عمل میکند که برای مدل های black-box هم مناسب است.  
+\end{enumerate}
+
+\clearpage
+\section{سوال ۲}
+\subsection{رگرسیون خطی یا رگرسیون لاجیستیک}
+\subsubsection{simulatibilty}
+عوامل تصمیم گیرنده را انسان نیز میتواند مشخص کند و مشکلی نیست و البته تعامل یا اینتراکشن بین انها نیز کمترین مقدار است. 
+\subsubsection{decomposability}
+متغیرها مشخص هستند اما تعامل بین آنها بیشتر شده تا مدل بیشتر decomposable باشد. 
+\subsubsection{\lr{algorithmic transparency}}
+بدون روش های آماری پیشرفته نمیتواند متغیرها و تاثیرات آنها را به سادگی بررسی کرد.
+\subsubsection{post-hoc}
+نیاز نیست. 
+\subsection{درخت تصمیم}
+\subsubsection{simulatibilty}
+یک انسان بدون 
+هیچ دانش ریاضی ای هم میتواند درخت را شبیه سازی و آزمایش کند و مشکلی ندارد. 
+\subsubsection{decomposability}
+مدل تفکیک پذیر هست زیرا از یک سری قانون تشکیل شده که خیلی مشخص است و هر کسی میتواند آنها را به خودی خود درک کند.
+\subsubsection{\lr{algorithmic transparency}}
+شفاف است زیرا قواعد آن توسط انسان قابل درک و فهم است و به سادگی میتوان فرآیند را درک کرد. 
+\subsubsection{post-hoc}
+نیازی نیست. 
+\subsection{KNN}
+\subsubsection{simulatibilty}
+قابل انجام است زیرا پیچیدگی خاصی ندارد و انسان نیز میتواند انجام دهد.
+\subsubsection{decomposability}
+اگرچه تعداد متغیرها خیلی زیاد است و به سادگی مدل درخت تصمیم نیست ولی میتوان آنرا به صورت تک به تک آنالیز کرد. 
+\subsubsection{\lr{algorithmic transparency}}
+قوانین به قدری پیچیده هستند که برای فهم مدل به ابزار ریاضی مورد نیاز است. 
+\subsubsection{post-hoc}
+نیازی نیست. 
+\subsection{\lr{Bayesian Models}}
+\subsubsection{simulatibilty}
+مشکلی ندارد و میتوان روابط آماری را توسط افراد مورد بررسی قرار داد و از این نظر واضح است. 
+\subsubsection{decomposability}
+روابط آماری خیلی پیچیده شده اند اما میتوان با تجزیه آنها به حالت مارجینال مدل را decomposable کرد. 
+\subsubsection{\lr{algorithmic transparency}}
+حتی اگر مدل را بتوانیم decompose کنیم. بررسی شفافیت مدل به این سادگی ها نیست و فقط با ابزار ریاضی میتوان آنرا انجام داد. 
+\subsubsection{post-hoc}
+نیازی نیست. 
+\subsection{\lr{Tree ensemble}}
+\subsubsection{simulatibilty}
+ندارد
+\subsubsection{decomposability}
+ندارد
+\subsubsection{\lr{algorithmic transparency}}
+ندارد
+\subsubsection{post-hoc}
+
+نیاز دارد و معمولا از روش ساده سازی مدل یا استخراج اهمیت فیچرها استفاده میشود.
+
+\subsection{\lr{Support Vector Machine}}
+
+\subsubsection{simulatibilty}
+ندارد
+\subsubsection{decomposability}
+ندارد
+\subsubsection{\lr{algorithmic transparency}}
+ندارد
+\subsubsection{post-hoc}
+معمولا از ساده سازی مدل یا توضیحات محلی استفاده میشود. 
+\subsection{\lr{Multi-Layer Network}}
+\subsubsection{simulatibilty}
+ندارد
+\subsubsection{decomposability}
+ندارد
+
+\subsubsection{\lr{algorithmic transparency}}
+ندارد
+\subsubsection{post-hoc}
+نیاز دارد و معمولا از روش ساده سازی مدل، اهمیت ویژگیها و یا مصور سازی استفاده میشود
+
+\subsection{\lr{Convolutional Neural Network}}
+\subsubsection{simulatibilty}
+ندارد
+\subsubsection{decomposability}
+ندارد
+\subsubsection{\lr{algorithmic transparency}}
+ندارد
+\subsubsection{post-hoc}
+معمولا از روش های مبتنی بر اهمیت ویژگی یا مثلا مصور سازی داده استفاده میشود
+
+\subsection{\lr{Recurrent Neural Network}}
+\subsubsection{simulatibilty}
+ندارد
+\subsubsection{decomposability}
+ندارد
+\subsubsection{\lr{algorithmic transparency}}
+ندارد
+\subsubsection{post-hoc}
+معمولا از روش های اهمیت ویژگی استفاده میشود. 
+\end{document}
