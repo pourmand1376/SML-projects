@@ -1,0 +1,39 @@
+name: Build LaTeX
+
+on:
+  push:
+    branches: [ master ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - uses: xu-cheng/texlive-action/full@v1
+        with:
+          run: |
+            for tex in *.tex
+            do
+              xelatex -synctex=1 -interaction=nonstopmode $tex
+            done
+
+      - name: Copy PDFs to target directory
+        run: |
+          mkdir build
+          cp *.pdf build/
+
+      - name: Configure Git
+        run: |
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git config --global user.name "github-actions[bot]"
+
+      - name: Push
+        uses: s0/git-publish-subdir-action@develop
+        env:
+          REPO: self
+          BRANCH: build
+          FOLDER: build
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          MESSAGE: "Build"

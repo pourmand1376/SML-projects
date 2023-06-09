@@ -1,0 +1,21 @@
+% !TeX program = xelatex
+\input{template/packages}
+\usepackage{template/template}
+
+\begin{document}
+	\def\ci{\perp\!\!\!\perp}
+
+	% header{<Assignment-Number>}{<Assignment-Title>}{<Deadline-Date>}{<Gathered-by>}{<Supervised-by>}
+	\header{\small
+		پاسخ تمرین اول
+	}{عنوان تمرین}{1۸ بهمن }{}{}
+
+	% partheader{<Part-Name>}{<Part-Total-Score>}
+	\partheader{پاسخ سوالات تئوری}{60}
+	\begin{enumerate}
+		% question{<Question-TexFile-Path>}{<Question-Score>}
+		\question{solution/th1}
+		\question{solution/th2}
+	\end{enumerate}
+
+\end{document}

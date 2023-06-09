@@ -1,0 +1,30 @@
+% !TeX program = xelatex
+\input{template/packages}
+\usepackage{dsfont}
+\usepackage{hyperref}
+\usepackage{fontspec}
+\usepackage{template/template}
+
+\begin{document}
+	\def\ci{\perp\!\!\!\perp}
+	
+	% header{<Assignment-Number>}{<Assignment-Title>}{<Deadline-Date>}{<Gathered-by>}{<Supervised-by>}
+	\header
+	{کوییز اول}{عنوان }{تاریخ: }{}{}
+%	\input{template/info}
+	
+	% partheader{<Part-Name>}{<Part-Total-Score>}
+	\partheader{سوالات نظری}{70}
+	\begin{enumerate}
+		% question{<Question-TexFile-Path>}{<Question-Score>}
+		\question{questions/th3}
+		\question{questions/th1}
+		\question{questions/th2}
+	\end{enumerate}
+	\partheader{سوالات عملی}{30}
+	\begin{enumerate}
+		% question{<Question-TexFile-Path>}{<Question-Score>}
+		\question{questions/practical1}
+	\end{enumerate}
+	\vspace{0.5cm}	
+\end{document}
