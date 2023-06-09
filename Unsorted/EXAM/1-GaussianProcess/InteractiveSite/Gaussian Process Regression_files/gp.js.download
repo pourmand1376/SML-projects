@@ -1,0 +1,191 @@
+"use strict";
+
+var GP = function() {
+  this.N = 0;
+  this.kernelName = 'squared exponential';
+};
+
+GP.kernels = [
+  {
+    name: 'squared exponential',
+    hyperparams: [
+      {'name': 'variance', default: 1.0, min: 0.05, max: 2.0, step: 0.05},
+      {'name': 'length',   default: 0.2, min: 0.05, max: 1.0, step: 0.025},
+      {'name': 'noise',    default: 0.1, min: 0.05, max: 1.0, step: 0.025}
+    ],
+    eval: function(x, y, theta) {
+      return theta[0] * theta[0] * Math.exp(-Math.pow(x - y, 2) / (2 * theta[1] * theta[1]));
+    }
+  }, {
+    name: 'exponential',
+    hyperparams: [
+      {'name': 'variance', default: 1.0, min: 0.05, max: 2.0, step: 0.05},
+      {'name': 'length',   default: 0.2, min: 0.05, max: 1.0, step: 0.01},
+      {'name': 'noise',    default: 0.1, min: 0.05, max: 1.0, step: 0.01}
+    ],
+    eval: function(x, y, theta) {
+      return theta[0] * theta[0] * Math.exp(-Math.abs(x - y) / theta[1]);
+    }
+  }
+];
+
+GP.prototype.setKernel = function(name) {
+  for (var i = 0; i < GP.kernels.length; ++i) {
+    if (GP.kernels[i].name == name) {
+      console.log('Setting kernel to', name);
+      this.kernel = GP.kernels[i];
+      break;
+    }
+  }
+  this.hyperparams = { };
+  for (var i = 0; i < this.kernel.hyperparams.length; ++i) {
+    this.hyperparams[this.kernel.hyperparams[i].name] = this.kernel.hyperparams[i].default;
+  }
+};
+
+GP.prototype.setData = function(x, y) {
+  this.x = matrix(x);
+  this.y = matrix(y);
+  this.N = x.length;
+};
+
+GP.prototype.reset = function() {
+  this.N = 0;
+  this.fevals = 0;
+};
+
+GP.prototype.getSigmaInplace = function(Sigma, theta) {
+  for (var i = 0; i < this.N; ++i) {
+    for (var j = i; j < this.N; ++j) {
+      Sigma[i * this.N + j] = this.kernel.eval(this.x[i], this.x[j], theta);
+      Sigma[j * this.N + i] = Sigma[i * this.N + j];
+      if (i == j) {
+        Sigma[i * this.N + j] += theta[2] * theta[2];
+      }
+    }
+  }
+  return Sigma;
+};
+
+GP.prototype.getSigma = function(theta) {
+  var Sigma = zeros(this.N, this.N);
+  return this.getSigmaInplace(Sigma, theta);
+};
+
+GP.prototype.getHyperparams = function() {
+  var theta = zeros(this.kernel.hyperparams.length);
+  for (var i = 0; i < this.kernel.hyperparams.length; ++i) {
+    theta[i] = this.hyperparams[this.kernel.hyperparams[i].name];
+  }
+  return theta;
+};
+
+GP.prototype.setHyperparams = function(theta) {
+  for (var i = 0; i < this.kernel.hyperparams.length; ++i) {
+    this.hyperparams[this.kernel.hyperparams[i].name] = theta[i];
+  }
+};
+
+GP.prototype.getMoments = function(xstar) {
+  var theta = this.getHyperparams();
+  var self = this;
+  var KstarT = Float64Array.build(function(i, j) {
+    return self.kernel.eval(xstar[i], self.x[j], theta);
+  }, xstar.length, this.x.length);
+  var L = this.getSigma(theta).chol_inplace();
+  var mean = KstarT.multiply(L.bsolve(L.fsolve(this.y), {transpose: true}));
+  var variance = zeros(xstar.length);
+  for (var i = 0; i < xstar.length; ++i) {
+    variance[i] = this.kernel.eval(xstar[i], xstar[i], theta) + (theta[2] * theta[2]) - Math.pow(L.fsolve_inplace(KstarT.row(i)).norm(), 2);
+  }
+  return {mean: mean, variance: variance};
+};
+
+GP.prototype.logLikelihood = function(theta) {
+  this.fevals++;
+  var L = this.getSigma(theta).chol_inplace();
+  var logdet = L.diagonal().map(Math.log).sum();
+  return -0.5 * this.N * Math.log(2 * Math.PI) - logdet - 0.5 * Math.pow(L.fsolve(this.y).norm(), 2);
+};
+
+GP.prototype.getRealizations = function(xstar) {
+  var theta = this.getHyperparams();
+  var self = this;
+  var KstarT = Float64Array.build(function(i, j) {
+    return self.kernel.eval(xstar[i], self.x[j], theta);
+  }, xstar.length, this.x.length);
+  var L = this.getSigma(theta).chol_inplace();
+  var mean = KstarT.multiply(L.bsolve(L.fsolve(this.y), {transpose: true}));
+  var Kstar = KstarT.transpose();
+  var KinvKstar = zeros(this.N, xstar.length);
+  for (var j = 0; j < xstar.length; ++j) {
+    KinvKstar.setCol(j, L.bsolve(L.fsolve(Kstar.col(j)), {transpose: true}));
+  }
+  var covar = Float64Array.build(function(i, j) {
+    return self.kernel.eval(xstar[i], xstar[j], theta);
+  }, xstar.length, xstar.length).subtract(KstarT.multiply(KinvKstar)).add(eye(xstar.length, xstar.length).scale(1e-8));
+  var L = covar.chol();
+
+  var getNormal = function() {
+    var x, y, w;
+    do {
+      var x = Math.random() * 2 - 1, y = Math.random() * 2 - 1;
+      w = x * x + y * y;
+    } while (w >= 1.0)
+    return x * Math.sqrt(-2 * Math.log(w) / w);
+  };
+
+  self.realizations = [ ];
+  for (var i = 0; i < 5; ++i) {
+    self.realizations.push(mean.add(L.multiply(Float64Array.build(getNormal, xstar.length, 1))));
+  }
+  return self.realizations;
+};
+
+// Evaluate gradient w.r.t theta using forward difference
+GP.prototype.gradientFD = function(theta) {
+  var n = this.kernel.hyperparams.length;
+  var h = 1e-6;
+  var delta = eye(n).scale(h);
+  var logLikelihood = this.logLikelihood(theta);
+  var grad = zeros(n);
+  for (var i = 0; i < n; ++i) {
+    grad[i] = (this.logLikelihood(theta.add(delta.col(i))) - logLikelihood) / h;
+  }
+  return grad.scale(-1);
+};
+
+// Use multistart BFGS to find hyperparameters that maximize the log likelihood
+GP.prototype.optimize = function() {
+  this.fevals = 0;
+  var theta = this.getHyperparams();
+  var self = this;
+  // multistart proposals (current setting and uniform samples)
+  var proposals = [theta];
+  for (var i = 0; i < 10; ++i) {
+    var random_proposl = Float64Array.build(function(i) {
+      return Math.random() * (self.kernel.hyperparams[i].max - self.kernel.hyperparams[i].min) + self.kernel.hyperparams[i].min;
+    }, self.kernel.hyperparams.length);
+    proposals.push(random_proposl);
+  }
+  // run BFGS at each proposal
+  var bestProposal = proposals[0].copy();
+  var bestProposalValue = self.logLikelihood(bestProposal);
+  for (var i = 0; i < proposals.length; ++i) {
+    var proposal = proposals[i].copy();
+    for (var j = 0; j < 5; ++j) {
+      var result = BFGS(function(x) { return self.gradientFD(x); }, proposal, 10);
+      proposal = result.optimum;
+      if (result.errors.length > 0)
+        break;
+    }
+    var value = self.logLikelihood(proposal);
+    if (value > bestProposalValue) {
+      bestProposalValue = value;
+      bestProposal = proposal.copy();
+    }
+  }
+  console.log(this.fevals);
+  this.setHyperparams(bestProposal);
+  return proposal;
+};
